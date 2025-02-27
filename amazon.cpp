@@ -10,6 +10,12 @@
 #include "product_parser.h"
 #include "util.h"
 
+#include "mydatastore.h"
+#include "book.h"
+#include "movie.h"
+#include "clothing.h"
+
+
 using namespace std;
 struct ProdNameSorter {
     bool operator()(Product* p1, Product* p2) {
@@ -29,7 +35,7 @@ int main(int argc, char* argv[])
      * Declare your derived DataStore object here replacing
      *  DataStore type to your derived type
      ****************/
-    DataStore ds;
+    MyDataStore ds;
 
 
 
@@ -69,6 +75,7 @@ int main(int argc, char* argv[])
         getline(cin,line);
         stringstream ss(line);
         string cmd;
+
         if((ss >> cmd)) {
             if( cmd == "AND") {
                 string term;
@@ -89,6 +96,49 @@ int main(int argc, char* argv[])
                 }
                 hits = ds.search(terms, 1);
                 displayProducts(hits);
+            }
+            else if (cmd == "ADD") {
+                string username;
+                int hitNumber;
+                if (ss >> username >> hitNumber) {
+                    // Find the user by username
+                    User* user = ds.getUserByUsername(username);
+                    if (user != nullptr) {
+                        if (hitNumber > 0 && hitNumber <= hits.size()) {
+                            Product* p = hits[hitNumber - 1];
+                            ds.addToCart(user, p);  // Assuming addToCart takes a User* and a Product*
+                            cout << "Product added to " << username << "'s cart!" << endl;
+                        } else {
+                            cout << "Invalid product number." << endl;
+                        }
+                    } else {
+                        cout << "User not found!" << endl;
+                    }
+                }
+            }
+            else if (cmd == "VIEWCART") {
+                string username;
+                if (ss >> username) {
+                    // Find the user by username
+                    User* user = ds.getUserByUsername(username);
+                    if (user != nullptr) {
+                        ds.viewCart(user);  // Assuming displayCart takes a User* as argument
+                    } else {
+                        cout << "User not found!" << endl;
+                    }
+                }
+            }
+            else if (cmd == "BUYCART") {
+                string username;
+                if (ss >> username) {
+                    // Find the user by username
+                    User* user = ds.getUserByUsername(username);
+                    if (user != nullptr) {
+                        ds.checkout(user);  // Assuming buyCart takes a User* as argument
+                    } else {
+                        cout << "User not found!" << endl;
+                    }
+                }
             }
             else if ( cmd == "QUIT") {
                 string filename;
